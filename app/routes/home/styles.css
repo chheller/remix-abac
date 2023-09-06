@@ -1,0 +1,16 @@
+table {
+    margin: auto;
+    width: 85%;
+    border: 1px solid #ddd;
+    border-radius: 25px;
+}
+
+td {
+    padding: 16px;
+}
+tr:nth-child(odd) {
+    background-color: #fff;
+}
+tr:nth-child(even) {
+    background-color: #eee;
+}
