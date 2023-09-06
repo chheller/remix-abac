@@ -27,7 +27,7 @@ model Password {
 // Just for testing purposes
 model UserAdGroup {
   adGroupName String
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: NoAction)
   userId String
 
   @@id([adGroupName, userId])
@@ -35,7 +35,7 @@ model UserAdGroup {
 
 model UserJobCode {
   jobCode String
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: NoAction)
   userId String
 
   @@id([jobCode, userId])
@@ -55,9 +55,9 @@ model UserRole {
 
 model RoleFeature {
   id String @id @default(cuid())
-  userRole UserRole @relation(fields: [roleId], references: [id])
+  userRole UserRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
   roleId String
-  feature UserFeature @relation(fields: [featureId], references: [id])
+  feature UserFeature @relation(fields: [featureId], references: [id], onDelete: Cascade)
   featureId String
   modifiedBy String
   createdAt DateTime @default(now())
@@ -79,7 +79,7 @@ model UserFeature {
 
 model RoleJobCode {
   id String @id @default(cuid())
-  userRole UserRole @relation(fields: [roleId], references: [id])
+  userRole UserRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
   roleId String
   jobCode String
   modifiedBy String
@@ -91,7 +91,7 @@ model RoleJobCode {
 
 model RoleAdGroup {
   id String @id @default(cuid())
-  userRole UserRole @relation(fields: [roleId], references: [id])
+  userRole UserRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
   roleId String
   adGroupName String
   modifiedBy String

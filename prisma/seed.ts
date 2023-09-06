@@ -19,7 +19,7 @@ async function seed() {
       },
       password: {
         create: {
-          hash: await bcrypt.hash(`test_1`, 10)
+          hash: await bcrypt.hash(`a test password`, 10)
         }
       }
     },
@@ -37,20 +37,16 @@ async function seed() {
       },
       password: {
         create: {
-          hash: await bcrypt.hash(`test_1`, 10)
+          hash: await bcrypt.hash(`a test password`, 10)
         }
       }
     }
   ] as const
 
-  // cleanup the existing database
-  await prisma.user.deleteMany({
-    where: {
-      email: { in: testUsers.map(({ email }) => email) }
-    }
-  }).catch(() => {
-    // no worries if it doesn't exist yet
-  });
+  await prisma.userRole.deleteMany({});
+  await prisma.userJobCode.deleteMany({});
+  await prisma.userAdGroup.deleteMany({})
+  await prisma.user.deleteMany({})
 
   for (const user of testUsers) {
     await prisma.user.create({ data: user })
