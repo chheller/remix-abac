@@ -4,41 +4,57 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function seed() {
-  const email = "rachel@remix.run";
+  const testUsers = [
+    {
+      email: "basicUser@test.com",
+      adGroups: {
+        create: {
+          adGroupName: "Basic"
+        }
+      },
+      jobCodes: {
+        create: {
+          jobCode: "555-555-5555"
+        }
+      },
+      password: {
+        create: {
+          hash: await bcrypt.hash(`test_1`, 10)
+        }
+      }
+    },
+    {
+      email: "admin@test.com",
+      adGroups: {
+        create: {
+          adGroupName: "Admin"
+        }
+      },
+      jobCodes: {
+        create: {
+          jobCode: "888-888-8888"
+        }
+      },
+      password: {
+        create: {
+          hash: await bcrypt.hash(`test_1`, 10)
+        }
+      }
+    }
+  ] as const
 
   // cleanup the existing database
-  await prisma.user.delete({ where: { email } }).catch(() => {
+  await prisma.user.deleteMany({
+    where: {
+      email: { in: testUsers.map(({ email }) => email) }
+    }
+  }).catch(() => {
     // no worries if it doesn't exist yet
   });
 
-  const hashedPassword = await bcrypt.hash("racheliscool", 10);
-
-  const user = await prisma.user.create({
-    data: {
-      email,
-      password: {
-        create: {
-          hash: hashedPassword,
-        },
-      },
-    },
-  });
-
-  await prisma.note.create({
-    data: {
-      title: "My first note",
-      body: "Hello, world!",
-      userId: user.id,
-    },
-  });
-
-  await prisma.note.create({
-    data: {
-      title: "My second note",
-      body: "Hello, world!",
-      userId: user.id,
-    },
-  });
+  for (const user of testUsers) {
+    await prisma.user.create({ data: user })
+  }
 
   console.log(`Database has been seeded. 🌱`);
 }
