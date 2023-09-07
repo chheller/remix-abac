@@ -28,7 +28,7 @@ export const loader = async ({ request }: LoaderArgs) => {
 import { negate, isEmpty } from "lodash/fp";
 export const action = async ({ request }: ActionArgs) => {
   const text = await request.text();
-  console.log(text);
+
   const stringied = qs.parse(text) as {
     role: Record<
       string,
@@ -39,7 +39,6 @@ export const action = async ({ request }: ActionArgs) => {
       }
     >;
   };
-  console.log(JSON.stringify(stringied, null, 2));
 
   for (const [roleKey, roleValue] of Object.entries(stringied.role ?? [])) {
     const adGroupMutations = roleValue.adGroups
@@ -62,13 +61,23 @@ export const action = async ({ request }: ActionArgs) => {
           update: {},
         }),
       );
+    console.log(roleValue.features);
     const userRoleFeaturesMutation = prisma.userRole.update({
       where: { id: roleKey },
       data: {
         roleFeatures: {
-          connect: roleValue.features.map((feature) => ({
-            roleId_featureId: { featureId: feature, roleId: roleKey },
-          })),
+          connectOrCreate: roleValue.features
+            .filter(negate(isEmpty))
+            .map((feature) => ({
+              create: {
+                modifiedBy: "test",
+                feature: { connect: { id: feature } },
+              },
+
+              where: {
+                roleId_featureId: { featureId: feature, roleId: roleKey },
+              },
+            })),
         },
       },
     });
@@ -78,7 +87,7 @@ export const action = async ({ request }: ActionArgs) => {
       ...jobCodeMutations,
       userRoleFeaturesMutation,
     ]);
-    console.log({ results });
+    results.forEach(console.log);
   }
   return null;
 };
