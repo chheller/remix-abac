@@ -39,7 +39,7 @@ export const loader = async ({ request }: LoaderArgs) => {
   const features = await prisma.userFeature.findMany({});
   return { roles, features, user };
 };
-export const action = async ({ request, context }: ActionArgs) => {
+export const action = async ({ request }: ActionArgs) => {
   const text = await request.text();
   const user = await getUser(request);
   if (!user) {
