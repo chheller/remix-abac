@@ -43,17 +43,19 @@ export const action = async ({ request, context }: ActionArgs) => {
   if (!user) {
     return redirect("/login");
   }
-  const stringied = qs.parse(text) as {
+  const parsedRoleMappings = qs.parse(text) as {
     role: Record<
-      string,
+      string, // This the role id
       {
-        features: Array<string>;
-        jobCodes: Array<string>;
-        adGroups: Array<string>;
+        features: Array<string>; // these are feature ids
+        jobCodes: Array<string>; // these are job code values e.g. 123-456-789
+        adGroups: Array<string>; // these are AD Group values e.g. "Test Group"
       }
     >;
   };
-  for (const [roleKey, roleValue] of Object.entries(stringied.role ?? [])) {
+  for (const [roleKey, roleValue] of Object.entries(
+    parsedRoleMappings.role ?? [],
+  )) {
     await prisma.userRole.update({
       where: { id: roleKey },
       data: {
@@ -103,6 +105,8 @@ export const action = async ({ request, context }: ActionArgs) => {
   return null;
 };
 
+export const links = () => [{ rel: "stylesheet", href: styles }];
+
 export default () => {
   const { roles, features } = useLoaderData<typeof loader>();
   const featureFetcher = useFetcher();
@@ -112,6 +116,7 @@ export default () => {
 
   const navigation = useNavigation();
 
+  // For a nicer UX, we manage some local state to add or remove features, job codes, or ad groups before submitting the form altogether
   const [stateRoles, setStateRoles] = useState(
     roles.map((r) => ({
       id: r.id,
@@ -125,12 +130,21 @@ export default () => {
       })),
     })),
   );
+
+  // Clear out the form on submit
+  // TODO: Use this for a spinner? Typical response time is so fast a spinner doesn't even make sense
   useEffect(() => {
     if (navigation.state !== "submitting") {
       formRef.current?.reset();
     }
   }, [navigation]);
 
+  /**
+   *  Add a feature, jobcode, or adgroup to the local form state
+   * @param attribute The type of attribute to add
+   * @param roleId The id of the Role to add the attribute to
+   * @param attributeValue The value of the attribute. Should be the feature id in the case the attribute is 'features'
+   */
   const addAttribute = (
     attribute: "features" | "jobCodes" | "adGroups",
     roleId: string,
@@ -141,6 +155,8 @@ export default () => {
         return produce(prevState, (draft) => {
           const roleIdx = draft.findIndex((r) => r.id === roleId);
           match(attribute)
+            // Iterate over the possible attribute types, and check if they've already been added
+            // If the attribute is already added, no-op
             .with("features", () => {
               if (
                 draft[roleIdx].features.findIndex(
@@ -181,11 +197,16 @@ export default () => {
       });
     }
   };
-
+  /**
+   * Remove a feature, jobcode, or adgroup from the local form state
+   * @param attribute The type of attribute to remove
+   * @param roleId The role to remove the attribute from
+   * @param attributeValue  The value of the attribute being removed. Should be the feature id in the case the attribute is 'features'
+   */
   const removeAttribute = (
+    attribute: "jobCodes" | "features" | "adGroups",
     roleId: string,
     attributeValue: string,
-    attribute: "jobCodes" | "features" | "adGroups",
   ) => {
     setStateRoles((prevState) => {
       return produce(prevState, (draft) => {
@@ -262,7 +283,8 @@ export default () => {
             </tr>
           </thead>
           <tbody>
-            {stateRoles.map((role, idx) => (
+            {/* Iterate over all the roles and map out the features, jobcodes and ad groups*/}
+            {stateRoles.map((role) => (
               <tr key={role.id}>
                 <td>{role.name}</td>
                 <td style={{ verticalAlign: "top" }}>
@@ -281,9 +303,9 @@ export default () => {
                               className="h-6 w-6"
                               onClick={() =>
                                 removeAttribute(
+                                  "features",
                                   role.id,
                                   feature.feature,
-                                  "features",
                                 )
                               }
                             />
@@ -292,6 +314,7 @@ export default () => {
                       ))}
                       <tr>
                         <td className="flex flex-1 justify-center">
+                          {/* For features, those need to already exist in the database. So we use a select here instead of arbitrary text */}
                           <select
                             name={`role[${role.id}][features][${role.features.length}]`}
                             id="addFeature"
@@ -303,6 +326,7 @@ export default () => {
                           >
                             <option label="Select a Feature"></option>
                             {features
+                              // Hide any features that are already added to the role
                               .filter((feature) => {
                                 const contained =
                                   role.features.findIndex(
@@ -340,9 +364,9 @@ export default () => {
                               className="h-6 w-6"
                               onClick={() =>
                                 removeAttribute(
+                                  "jobCodes",
                                   role.id,
                                   jobCode.jobCode!,
-                                  "jobCodes",
                                 )
                               }
                             />
@@ -388,9 +412,9 @@ export default () => {
                               className="h-6 w-6"
                               onClick={() =>
                                 removeAttribute(
+                                  "adGroups",
                                   role.id,
                                   adGroup.adGroupName!,
-                                  "adGroups",
                                 )
                               }
                             />
@@ -424,7 +448,6 @@ export default () => {
             ))}
           </tbody>
         </table>
-
         <button type="submit" className="btn btn-blue m-4 self-center w-60">
           Save Changes
         </button>
@@ -433,4 +456,3 @@ export default () => {
   );
 };
 
-export const links = () => [{ rel: "stylesheet", href: styles }];
