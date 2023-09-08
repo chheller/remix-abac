@@ -203,6 +203,40 @@ export default () => {
   return (
     <div className="flex flex-1 flex-col content-center items-center">
       <h1 className="text-lg font-bold m-6">Role Manager </h1>
+      <div className="flex flex-1 justify-between p-4">
+        <roleFetcher.Form
+          name="addRole"
+          id="addRole"
+          method="POST"
+          action="/role"
+        >
+          <input
+            name="role"
+            type="text"
+            placeholder="New role name..."
+            className="border-2 mx-4"
+          ></input>
+          <button type="submit" className="btn btn-blue mx-4">
+            Create Role
+          </button>
+        </roleFetcher.Form>
+        <featureFetcher.Form
+          name="addFeature"
+          id="addFeatureForm"
+          method="POST"
+          action="/feature"
+        >
+          <input
+            name="newFeature"
+            type="text"
+            placeholder="New feature name..."
+            className="border-2 mx-4"
+          ></input>
+          <button type="submit" className="btn btn-blue mx-4">
+            Create Feature
+          </button>
+        </featureFetcher.Form>
+      </div>
       <Form
         method="POST"
         replace
@@ -212,7 +246,15 @@ export default () => {
         }}
         className="flex flex-col"
       >
-        <table>
+        <table className="table-fixed">
+          <thead>
+            <tr>
+              <th className="w-1/12">Role</th>
+              <th className="w-1/3">Features</th>
+              <th className="w-1/3">Job Codes</th>
+              <th className="w-1/3">AD Groups</th>
+            </tr>
+          </thead>
           <tbody>
             {stateRoles.map((role, idx) => (
               <tr key={role.id}>
@@ -243,7 +285,7 @@ export default () => {
                         </tr>
                       ))}
                       <tr>
-                        <td>
+                        <td className="flex flex-1 justify-center">
                           <select
                             name={`role[${role.id}][features][${role.features.length}]`}
                             id="addFeature"
@@ -277,7 +319,7 @@ export default () => {
                   </table>
                 </td>
                 <td style={{ verticalAlign: "top" }}>
-                  <table>
+                  <table className="table-auto">
                     <tbody>
                       {role.jobCodes.map((jobCode, jobCodeIdx) => (
                         <tr key={jobCode.jobCode}>
@@ -325,7 +367,7 @@ export default () => {
                   </table>
                 </td>
                 <td style={{ verticalAlign: "top" }}>
-                  <table>
+                  <table className="table-auto">
                     <tbody>
                       {role.adGroups.map((adGroup, adGroupIdx) => (
                         <tr key={adGroup.adGroupName}>
@@ -377,44 +419,10 @@ export default () => {
           </tbody>
         </table>
 
-        <button type="submit" className="btn btn-blue m-4 justify-self-center">
+        <button type="submit" className="btn btn-blue m-4 self-center w-60">
           Save Changes
         </button>
       </Form>
-      <div className="flex flex-1 justify-between p-4">
-        <roleFetcher.Form
-          name="addRole"
-          id="addRole"
-          method="POST"
-          action="/role"
-        >
-          <input
-            name="role"
-            type="text"
-            placeholder="New role name..."
-            className="border-2 mx-4"
-          ></input>
-          <button type="submit" className="btn btn-blue mx-4">
-            Create Role
-          </button>
-        </roleFetcher.Form>
-        <featureFetcher.Form
-          name="addFeature"
-          id="addFeatureForm"
-          method="POST"
-          action="/feature"
-        >
-          <input
-            name="newFeature"
-            type="text"
-            placeholder="New feature name..."
-            className="border-2 mx-4"
-          ></input>
-          <button type="submit" className="btn btn-blue mx-4">
-            Create Feature
-          </button>
-        </featureFetcher.Form>
-      </div>
     </div>
   );
 };
