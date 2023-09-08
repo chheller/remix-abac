@@ -22,7 +22,7 @@ import { match } from "ts-pattern";
 // Validate AD Groups (Should be alphabetical only)
 // Validate job codes (should be numeric only, except for asterisk in at most 2 of the 3 slots)
 // Validate Roles (Should be alphabetical only)
-// Implement get endpoints for given user
+// Implement get endpoint for given user that returns a signed JWT with roles and features (matches wildcard JobCodes)
 
 export const loader = async ({ request }: LoaderArgs) => {
   const user = await requireUser(request);
