@@ -23,6 +23,8 @@ import { match } from "ts-pattern";
 // Validate job codes (should be numeric only, except for asterisk in at most 2 of the 3 slots)
 // Validate Roles (Should be alphabetical only)
 // Implement get endpoint for given user that returns a signed JWT with roles and features (matches wildcard JobCodes)
+// UI to delete roles
+// UI to delete features
 
 export const loader = async ({ request }: LoaderArgs) => {
   const user = await requireUser(request);
