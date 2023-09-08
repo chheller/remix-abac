@@ -31,9 +31,12 @@ import { negate, isEmpty, pick } from "lodash/fp";
 import { produce } from "immer";
 import { ro } from "@faker-js/faker";
 import { match } from "ts-pattern";
-export const action = async ({ request }: ActionArgs) => {
+export const action = async ({ request, context }: ActionArgs) => {
   const text = await request.text();
-
+  const user = await getUser(request);
+  if (!user) {
+    return redirect("/login");
+  }
   const stringied = qs.parse(text) as {
     role: Record<
       string,
@@ -44,7 +47,6 @@ export const action = async ({ request }: ActionArgs) => {
       }
     >;
   };
-  console.log(JSON.stringify(stringied, null, 2));
   for (const [roleKey, roleValue] of Object.entries(stringied.role ?? [])) {
     await prisma.userRole.update({
       where: { id: roleKey },
@@ -54,7 +56,7 @@ export const action = async ({ request }: ActionArgs) => {
           connectOrCreate: roleValue.adGroups
             .filter(negate(isEmpty))
             .map((adGroup) => ({
-              create: { adGroupName: adGroup, modifiedBy: "test user" },
+              create: { adGroupName: adGroup, modifiedBy: user.id },
               where: {
                 adGroupName_roleId: { adGroupName: adGroup, roleId: roleKey },
               },
@@ -67,7 +69,7 @@ export const action = async ({ request }: ActionArgs) => {
             .map((jobCode) => ({
               create: {
                 jobCode: jobCode,
-                modifiedBy: "test user",
+                modifiedBy: user.id,
               },
               where: { jobCode_roleId: { jobCode: jobCode, roleId: roleKey } },
             })),
@@ -78,7 +80,7 @@ export const action = async ({ request }: ActionArgs) => {
             .filter(negate(isEmpty))
             .map((feature) => ({
               create: {
-                modifiedBy: "test",
+                modifiedBy: user.id,
                 feature: { connect: { id: feature } },
               },
               where: {
@@ -200,7 +202,7 @@ export default () => {
 
   return (
     <div className="flex flex-1 flex-col content-center items-center">
-      <h1 className="text-lg font-bold">ABAC </h1>
+      <h1 className="text-lg font-bold m-6">Role Manager </h1>
       <Form
         method="POST"
         replace
@@ -313,6 +315,7 @@ export default () => {
                                   role.id,
                                   e.currentTarget.value,
                                 );
+                                e.currentTarget.value = "";
                               }
                             }}
                           ></input>
@@ -360,6 +363,7 @@ export default () => {
                                   role.id,
                                   e.currentTarget.value,
                                 );
+                                e.currentTarget.value = "";
                               }
                             }}
                           ></input>

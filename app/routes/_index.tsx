@@ -9,7 +9,7 @@ export const meta: V2_MetaFunction = () => [{ title: "Remix Notes" }];
 export const loader = async ({request}: LoaderArgs) => {
   const user = await getUser(request);
   if (user) {
-    return redirect('/home')
+    return redirect("/role_manager");
   }
   return {}
 }
