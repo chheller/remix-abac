@@ -99,9 +99,6 @@ export const action = async ({ request }: ActionArgs) => {
             })),
         },
       },
-      include: {
-        roleFeatures: true,
-      },
     });
   }
   return null;
