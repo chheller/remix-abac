@@ -1,19 +1,29 @@
+import { ActionArgs, LoaderArgs, redirect } from "@remix-run/node";
 import {
   Form,
   useFetcher,
   useLoaderData,
   useNavigation,
-  useSubmit,
 } from "@remix-run/react";
-import { prisma } from "~/db.server";
-import styles from "./styles.css";
-import { getUser, requireUser } from "~/session.server";
-import { ActionArgs, LoaderArgs, redirect } from "@remix-run/node";
 import qs from "qs";
-import { ChangeEvent, useEffect, useRef, useState } from "react";
-import { features } from "process";
+import { useEffect, useRef, useState } from "react";
+import { prisma } from "~/db.server";
+import { getUser, requireUser } from "~/session.server";
+import styles from "./styles.css";
 
-import { PlayCircleIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { TrashIcon } from "@heroicons/react/24/solid";
+import { produce } from "immer";
+import { isEmpty, negate, pick } from "lodash/fp";
+import { match } from "ts-pattern";
+
+// TODO:
+// Server validation errors
+// Client Validation errors
+// Validate AD Groups (Should be alphabetical only)
+// Validate job codes (should be numeric only, except for asterisk in at most 2 of the 3 slots)
+// Validate Roles (Should be alphabetical only)
+// Implement get endpoints for given user
+
 export const loader = async ({ request }: LoaderArgs) => {
   const user = await requireUser(request);
 
@@ -27,10 +37,6 @@ export const loader = async ({ request }: LoaderArgs) => {
   const features = await prisma.userFeature.findMany({});
   return { roles, features, user };
 };
-import { negate, isEmpty, pick } from "lodash/fp";
-import { produce } from "immer";
-import { ro } from "@faker-js/faker";
-import { match } from "ts-pattern";
 export const action = async ({ request, context }: ActionArgs) => {
   const text = await request.text();
   const user = await getUser(request);
